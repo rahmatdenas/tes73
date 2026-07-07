@@ -1,36 +1,42 @@
 @media (max-width: 800px) {
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  body {
-    display: block; /* Matikan flex bawaan desktop */
-    position: relative;
-  }
-
+  /* Peta harus punya z-index lebih rendah, tapi posisinya tetap di belakang */
   #map {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 1;
+    position: fixed;
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    z-index: 1; /* Peta di bawah */
   }
 
+  /* Sidebar sekarang hanya berfungsi sebagai wadah kontrol panel */
   #sidebar {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; /* KUNCI: Biarkan peta di belakang bisa disentuh */
-    z-index: 500;
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    z-index: 100; /* Sidebar di atas peta */
+    pointer-events: none; /* Ini kunci: Klik menembus ke peta */
+  }
+
+  /* Panel dan Navigasi harus bisa diklik (pointer-events: auto) */
+  #panel, nav {
+    pointer-events: auto;
+  }
+
+  #panel {
+    position: absolute;
+    top: 0; left: 0; width: 100%;
+    height: calc(100% - 50px);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.3);
+    background: #822;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
   nav {
-    pointer-events: auto;
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50px; /* Tinggi navigasi */
-    background: #822; 
-    z-index: 10;
+    bottom: 0; left: 0; 
+    width: 100%; height: 50px;
+    background: #822;
+    z-index: 101; /* Di atas segalanya */
     display: flex;
     align-items: center;
   }
