@@ -126,3 +126,39 @@ function formatWikidataDate(dateString, precision) {
     return yearStr;
   }
 }
+
+// ============================================================
+// LOGIKA NAVIGASI TAB (LINIMASA & TENTANG)
+// ============================================================
+window.addEventListener('hashchange', updateTabNavigation);
+window.addEventListener('load', updateTabNavigation);
+
+function updateTabNavigation() {
+  // Ambil hash dari URL, atau gunakan #details sebagai bawaan
+  let hash = window.location.hash || '#details';
+  
+  // Sembunyikan semua konten panel
+  document.querySelectorAll('.panel-content').forEach(el => {
+    // Abaikan elemen loading
+    if(el.id !== 'loading') {
+      el.style.display = 'none';
+    }
+  });
+  
+  // Hapus warna aktif dari semua menu
+  document.querySelectorAll('nav li').forEach(li => {
+    li.classList.remove('selected');
+  });
+
+  // Tampilkan konten yang dipilih
+  let targetSection = document.querySelector(hash);
+  if (targetSection) {
+    targetSection.style.display = 'block';
+  }
+
+  // Beri warna aktif pada menu yang diklik
+  let activeNav = document.querySelector('nav a[href="' + hash + '"]');
+  if (activeNav) {
+    activeNav.parentElement.classList.add('selected');
+  }
+}
