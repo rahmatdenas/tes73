@@ -102,6 +102,8 @@ marker.on('click', function() {
         }, 300);
         
       });
+    }
+});
 
   // Matikan animasi loading dan tampilkan panel details
   document.getElementById('loading').style.display = 'none';
