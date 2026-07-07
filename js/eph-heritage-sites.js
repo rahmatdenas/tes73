@@ -38,6 +38,7 @@ function renderMapAndPanel() {
   let allHtml = ''; 
   let jedaScroll = null;
   let jedaAutoScroll = null;
+  let indexAktif = '-1';
 
   // 1. RAKIT KONTEN HTML PANEL
   TimelineRecords.forEach((record, index) => {
@@ -83,16 +84,17 @@ function renderMapAndPanel() {
       
       // Interaksi: Klik marker otomatis scroll panel
 marker.on('click', function() {
+        
         if (typeof window.setMobilePanelExpanded === 'function') {
           window.setMobilePanelExpanded(true); 
         }
 
-        // KUNCI PERBAIKAN 1: Reset waktu setiap kali marker diklik
+        // KUNCI 2: Catat di memori bahwa marker ini sedang kita buka secara manual
+        indexAktif = index.toString();
+
         detailsContainer.classList.add('sedang-auto-scroll');
         clearTimeout(jedaAutoScroll);
         
-        // Beri waktu lebih panjang (misal 1.2 detik) agar animasi gulir selesai
-        // sebelum sensor observer dihidupkan kembali
         jedaAutoScroll = setTimeout(() => {
           detailsContainer.classList.remove('sedang-auto-scroll');
         }, 1200); 
