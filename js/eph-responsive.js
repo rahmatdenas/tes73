@@ -1,12 +1,12 @@
 // ============================================================
-// PENINGKATAN TAMPILAN PONSEL (Mobile Enhancements) - REVISI 50% & HEADER
+// PENINGKATAN TAMPILAN PONSEL (Mobile Enhancements) - REVISI FINAL
 // ============================================================
 
 (function() {
   var MOBILE_QUERY   = '(max-width: 800px)';
   var DRAG_THRESHOLD = 5;  
 
-  var panel, header, toggleIcon;
+  var panel, header, toggleIcon, navMenu;
   var currentY       = 0;
   var dragging       = false;
   var moved          = false;
@@ -17,19 +17,20 @@
     return window.matchMedia(MOBILE_QUERY).matches;
   }
 
-  // KUNCI 1: Hitung titik mentok atas (Terbuka 50%) dan bawah (Sisa Header)
+  // 1. Hitung Terbuka (50%)
   function getExpandedY() {
-    return panel.offsetHeight / 2; // Terbuka tepat setengah layar
+    return panel.offsetHeight / 2; 
   }
   
-function getCollapsedY() {
-  // Ganti penghitungan dinamis dengan angka statis 56 (sesuai tinggi header Anda)
-  // Anda bisa menambah/mengurangi angka 56 jika masih kurang pas (misal: 60 atau 65)
-  return panel.offsetHeight - 56; 
-}
+  // 2. Hitung Tertutup (Sisa Header)
+  function getCollapsedY() {
+    // Karena tinggi panel = 100% layar dikurangi Navigasi (50px),
+    // maka panel hanya perlu turun sejauh tingginya dikurangi tinggi Header.
+    var headerHeight = header ? header.offsetHeight : 60;
+    return panel.offsetHeight - headerHeight; 
+  }
 
   function clampY(y) {
-    // Kunci gerakan agar tidak bisa ditarik lebih tinggi dari 50% atau lebih rendah dari header
     return Math.min(Math.max(y, getExpandedY()), getCollapsedY());
   }
 
@@ -37,7 +38,7 @@ function getCollapsedY() {
     currentY = y;
     panel.style.transform = 'translateY(' + y + 'px)';
     
-    // Animasikan Ikon Panah (Putar 180 derajat saat tertutup)
+    // Animasikan Ikon Panah
     if (toggleIcon) {
       if (y > getExpandedY() + 20) {
         toggleIcon.style.transform = 'translateY(-50%) rotate(180deg)'; // Panah Atas
@@ -53,7 +54,6 @@ function getCollapsedY() {
     if (animate === false) panel.classList.add('eph-dragging');
     else panel.classList.remove('eph-dragging');
     
-    // Terapkan posisi: jika expand = 50%, jika tidak = sebatas header
     applyTransform(expand ? getExpandedY() : getCollapsedY());
     
     if (animate === false) {
@@ -91,20 +91,19 @@ function getCollapsedY() {
     dragging = false;
 
     if (!moved) {
-      // Jika header cuma diklik/di-tap, otomatis buka/tutup
+      // Tap pada header
       var isExpanded = currentY <= getExpandedY() + 10;
       window.setMobilePanelExpanded(!isExpanded);
     } else {
-      // Jika di-drag, snap ke posisi terdekat
+      // Drag/Tarik header
       var dragDistance = currentY - startTranslate;
       var SWIPE_THRESHOLD = 40; 
 
       if (dragDistance > SWIPE_THRESHOLD) {
-        window.setMobilePanelExpanded(false); // Ditarik turun -> Tutup ke header
+        window.setMobilePanelExpanded(false); 
       } else if (dragDistance < -SWIPE_THRESHOLD) {
-        window.setMobilePanelExpanded(true);  // Ditarik naik -> Buka 50%
+        window.setMobilePanelExpanded(true);  
       } else {
-        // Tarikan tidak kuat, kembali ke posisi awal
         var wasExpanded = startTranslate <= getExpandedY() + 10;
         window.setMobilePanelExpanded(wasExpanded);
       }
@@ -115,10 +114,8 @@ function getCollapsedY() {
   function handleViewportChange() {
     if (!panel) return;
     if (isMobile()) {
-      // Saat mobile dimuat, panel otomatis terbuka 50%
       window.setMobilePanelExpanded(true, false);
     } else {
-      // Kembalikan ke mode desktop
       panel.style.transform = '';
       panel.classList.remove('eph-dragging');
       currentY = 0;
@@ -128,12 +125,21 @@ function getCollapsedY() {
   window.addEventListener('load', function() {
     panel = document.getElementById('panel');
     header = document.getElementById('branding');
+    navMenu = document.querySelector('nav');
     if (!panel || !header) return;
-toggleIcon = document.getElementById('panel-toggle');
+
+    // KUNCI: SUNTIKKAN IKON TOGGLE (JIKA BELUM ADA)
+    if (!document.getElementById('panel-toggle')) {
+      toggleIcon = document.createElement('div');
+      toggleIcon.id = 'panel-toggle';
+      toggleIcon.innerHTML = '&#9660;'; // Chevron Bawah
+      header.appendChild(toggleIcon);
+    } else {
+      toggleIcon = document.getElementById('panel-toggle');
+    }
 
     handleViewportChange();
 
-    // Lekatkan event drag HANYA PADA HEADER
     header.addEventListener('touchstart', onTouchStart, { passive: false });
     header.addEventListener('touchmove', onTouchMove, { passive: false });
     header.addEventListener('touchend', onTouchEnd);
