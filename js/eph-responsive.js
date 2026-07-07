@@ -23,13 +23,20 @@ function getExpandedY() {
 }
 
 function getCollapsedY() {
-  // Ambil tinggi asli header. Jika karena satu hal nilainya 0, pasang fallback 56 sesuai ukuran CSS Anda
-  var headerHeight = (header && header.offsetHeight > 0) ? header.offsetHeight : 41;
-  
-  // RUMUS SAKTI: Tinggi total layar aktif dikurangi tinggi header. 
-  // Ini menjamin top panel akan berhenti pas di bawah layar (menyisakan headernya saja).
-  return window.innerHeight - headerHeight; 
-}
+    // 1. Ambil tinggi panel dan header yang paling presisi (termasuk border jika ada)
+    var tinggiPanel = panel.getBoundingClientRect().height;
+    var tinggiHeader = header.getBoundingClientRect().height || 56; 
+
+    // 2. ANGKA KOREKSI (Ini rahasianya!)
+    // Karena di gambarmu separuh header tenggelam (sekitar 20-30px), 
+    // kita paksa panelnya "naik" sedikit agar headernya muncul semua.
+    // Jika masih tenggelam, NAIKKAN angkanya (misal: 25, 30, atau 40).
+    // Jika terlalu tinggi, TURUNKAN angkanya (misal: 10 atau 0).
+    var angkaKoreksi = 25; 
+
+    // 3. Kurangi tinggi total panel dengan tinggi header, lalu kurangi lagi dengan angka koreksi
+    return tinggiPanel - tinggiHeader - angkaKoreksi; 
+  }
 
   function clampY(y) {
     return Math.min(Math.max(y, getExpandedY()), getCollapsedY());
