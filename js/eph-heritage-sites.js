@@ -77,23 +77,20 @@ function renderMapAndPanel() {
       record.marker = marker; 
       markerBounds.push([record.lat, record.lon]);
       
-      let popupContent = `
+ let popupContent = `
         <div class="custom-popup">
           ${record.imageUrl ? `<img src="${record.imageUrl}"><br>` : ''}
           <strong class="popup-title">${record.locationName}</strong>
           <span class="popup-date">${record.formattedDate}</span>
         </div>
       `;
-      marker.bindPopup(popupContent);
+      
+      marker.bindPopup(popupContent, { autoPan: false });
       
       // Event saat Marker di Klik
       marker.on('click', function() {
         
-        // Sengaja Dihapus/Komen agar klik marker tidak memaksa buka panel
-        // if (typeof window.setMobilePanelExpanded === 'function') {
-        //   window.setMobilePanelExpanded(true); 
-        // }
-
+fokusKeMarker(marker.getLatLng());
         let indexStr = index.toString();
         indexAktif = indexStr; // Sinkronkan memori
 
@@ -128,7 +125,7 @@ function renderMapAndPanel() {
       if (targetRecord && targetRecord.marker) {
         // Geser peta
         targetRecord.marker.openPopup();
-        Map.panTo(targetRecord.marker.getLatLng()); 
+        fokusKeMarker(targetRecord.marker.getLatLng());
 
         indexAktif = indexStr; // Sinkronkan memori
 
@@ -196,7 +193,7 @@ function renderMapAndPanel() {
         
         if (targetRecord && targetRecord.marker && !targetRecord.marker.isPopupOpen()) {
           targetRecord.marker.openPopup();
-          Map.panTo(targetRecord.marker.getLatLng());
+          fokusKeMarker(targetRecord.marker.getLatLng());
         }
       }
       
@@ -214,6 +211,33 @@ function renderMapAndPanel() {
   if (markerBounds.length > 0) {
     Map.fitBounds(markerBounds, { padding: [40, 40] });
   }
+}
+
+// Fungsi baru untuk fokus ke marker dengan transisi smooth dan ruang lega (offset)
+function fokusKeMarker(latlng) {
+  let targetZoom = 14;
+  
+  // Mengambil tinggi elemen map di layar (sisa 50% layar)
+  let mapHeight = document.getElementById('map').clientHeight;
+  
+  // Hitung offset: kita ingin kamera naik sedikit agar marker berada di bawah (memberi ruang popup)
+  // Nilai 0.25 berarti menggeser sebanyak 25% dari tinggi peta. Bisa disesuaikan jika kurang pas.
+  let yOffset = mapHeight * 0.25; 
+
+  // Konversi koordinat lat/lon ke titik piksel layar pada zoom 14
+  let targetPoint = Map.project(latlng, targetZoom);
+  
+  // Kurangi nilai Y (titik kamera digeser ke atas, sehingga marker turun)
+  targetPoint.y -= yOffset;
+  
+  // Kembalikan piksel menjadi koordinat lat/lon baru
+  let targetLatLng = Map.unproject(targetPoint, targetZoom);
+
+  // Eksekusi pergerakan kamera secara smooth (termasuk zoom in)
+  Map.flyTo(targetLatLng, targetZoom, {
+    animate: true,
+    duration: 1.2 // Waktu transisi dalam detik, cukup smooth dan tidak membebani render
+  });
 }
 
 // Fungsi utilitas format waktu
